@@ -1,0 +1,123 @@
+version: "3.8"
+
+services:
+
+  shared-libs:
+    build:
+      context: .
+      dockerfile: Dockerfile.shared-libs
+    volumes:
+      - shared-libs-volume:/app/shared-libs
+    networks:
+      - microfrontend-network
+
+  login:
+    build:
+      context: ./login
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    depends_on:
+      - shared-libs
+    volumes:
+      - shared-libs-volume:/app/shared-libs:ro
+      - ./common-utils:/app/node_modules/common-utils:ro
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microfrontend-network
+
+  atendidos:
+    build:
+      context: ./atendidos
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - shared-libs
+    volumes:
+      - shared-libs-volume:/app/shared-libs:ro
+      - ./common-utils:/app/node_modules/common-utils:ro
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microfrontend-network
+
+  pendientes:
+    build:
+      context: ./pendientes
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    depends_on:
+      - shared-libs
+    volumes:
+      - shared-libs-volume:/app/shared-libs:ro
+      - ./common-utils:/app/node_modules/common-utils:ro
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microfrontend-network
+
+  login:
+    build:
+      context: ./login
+      dockerfile: Dockerfile
+    ports:
+      - "3004:3004"
+    depends_on:
+      - shared-libs
+    volumes:
+      - shared-libs-volume:/app/shared-libs:ro
+      - ./common-utils:/app/node_modules/common-utils:ro
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microfrontend-network
+
+  transferencias:
+    build:
+      context: ./transferencias
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    depends_on:
+      - shared-libs
+    volumes:
+      - shared-libs-volume:/app/shared-libs:ro
+      - ./common-utils:/app/node_modules/common-utils:ro
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microfrontend-network
+
+  home:
+    build:
+      context: ./home
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - login
+      - atendidos
+      - pendientes
+      - transferencias
+    volumes:
+      - shared-libs-volume:/app/shared-libs:ro
+      - ./common-components-react:/app/node_modules/common-components-react:ro
+      - ./common-utils:/app/node_modules/common-utils:ro
+    environment:
+      - NODE_ENV=production
+      - LOGIN_URL=http://login:3004
+      - ATENDIDOS_URL=http://atendidos:3001
+      - PENDIENTES_URL=http://pendientes:3002
+      - TRANSFERENCIAS_URL=http://transferencias:3003
+    networks:
+      - microfrontend-network
+
+volumes:
+  shared-libs-volume:
+
+networks:
+  microfrontend-network:
+    driver: bridge
